@@ -21,3 +21,44 @@ A suffix of _vorigin is used for this device.
  在指定精简池时，使用快照或精简配置的设备创建给定大小的稀疏设备（默认为MB）。
  写入设备时，将会返回任何内容。从设备的其他区域读取将返回零块。通过使用零目标创建所请求大小的隐藏虚拟设备来实现虚拟快照。 
  _vorigin的后缀用于此设备。
+ 
+ 
+ iscsi target setup
+
+[root@ibm-p8-garrison-05 home]# targetcli
+/> ls
+/> /backstores/fileio create block1 /home/guest.qcow2 20G write_back=false
+/> /backstores/fileio create block2 /home/data.qcow2 20G write_back=false
+
+/> iscsi/
+/iscsi> create
+Created target iqn.2003-01.org.linux-iscsi.ibm-p8-garrison-05.ppc64le:sn.dc2c19b3e3a0.
+Created TPG 1.
+Global pref auto_add_default_portal=true
+Created default portal listening on all IPs (0.0.0.0), port 3260.
+
+/iscsi> 
+/iscsi> iqn.2003-01.org.linux-iscsi.ibm-p8-garrison-05.ppc64le:sn.dc2c19b3e3a0/tpg1/
+/iscsi/iqn.20...19b3e3a0/tpg1> portals/ create
+
+/iscsi/iqn.20...19b3e3a0/tpg1> luns/ create /backstores/fileio/block1
+Created LUN 0.
+/iscsi/iqn.20...19b3e3a0/tpg1> luns/ create /backstores/fileio/block2
+Created LUN 1.
+
+/iscsi/iqn.20...19b3e3a0/tpg1> portals/
+/iscsi/iqn.20.../tpg1/portals> delete 0.0.0.0 3260
+/iscsi/iqn.20.../tpg1/portals> create 10.16.200.238
+
+/iscsi/iqn.20...19b3e3a0/tpg1> acls/ 
+/iscsi/iqn.20...3a0/tpg1/acls> create iqn.1994-05.com.redhat:bc437b41ffa(initiator端cat /etc/iscsi/initiatorname.iscsi)
+/iscsi/iqn.20.../tpg1/portals> exit
+systemctl restart target.service
+
+
+iscsi initiator setup
+
+[root@ibm-p8-kvm-02-qe ~]# iscsiadm -m discovery -t st -p 10.16.200.238
+10.16.68.32:3260,1 iqn.2003-01.org.linux-iscsi.ibm-p8-garrison-05.ppc64le:sn.dc2c19b3e3a0
+[root@ibm-p8-kvm-02-qe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.ibm-p8-kvm-02-qe.ppc64le:sn.1007d01f9246 -l
+
