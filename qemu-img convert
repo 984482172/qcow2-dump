@@ -1,0 +1,23 @@
+ISCSI lvcreate
+
+2. Create lvs with thin_provisoning(精简配置)
+# lvcreate -L 5G -T vgtest/my_thin
+# lvcreate -T /dev/vgtest/my_thin -V 1G -n thin_test01
+  Logical volume "thin_test01" created.
+参数解读
+  -T, --thin, --thinpool ThinPoolLogicalVolume{Name|Path}
+    Creates thin pool or thin logical volume or both.
+Specifying the optional argument --size will cause the creation of the thin pool logical volume. 
+Specifying the optional argument --virtualsize will cause the creation of the thin logical volume 
+from given thin pool volume. Specifying both arguments will cause the creation of both thin pool 
+and thin volume using this pool. Requires device mapper kernel driver for thin provisioning from kernel 3.2 or newer. 
+
+  -V, --virtualsize VirtualSize[bBsSkKmMgGtTpPeE]
+    Create a sparse device of the given size (in MB by default) using a snapshot or thinly provisioned device 
+when thin pool is specified. Anything written to the device will be returned when reading from it. 
+Reading from other areas of the device will return blocks of zeros. 
+Virtual snapshot is implemented by creating a hidden virtual device of the requested size using the zero target. 
+A suffix of _vorigin is used for this device. 
+ 在指定精简池时，使用快照或精简配置的设备创建给定大小的稀疏设备（默认为MB）。
+ 写入设备时，将会返回任何内容。从设备的其他区域读取将返回零块。通过使用零目标创建所请求大小的隐藏虚拟设备来实现虚拟快照。 
+ _vorigin的后缀用于此设备。
